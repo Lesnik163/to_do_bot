@@ -18,11 +18,3 @@ class Task:
 
 	def complete(self):
 		self.is_completed = True
-
-if __name__ == "__main__":
-    a = Task("Купить хлеб")
-    b = Task("Позвонить")
-    print(a)
-    print(b)
-    b.complete()
-    print(b)
