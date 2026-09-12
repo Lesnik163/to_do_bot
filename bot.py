@@ -34,5 +34,31 @@ def handle_help(message):
     ]),
     )
 
+@bot.message_handler(commands=['add'])
+def handle_add(message):
+    parts = message.text.split(maxsplit=1)
+    if len(parts) < 2 or not parts[1].strip():
+        bot.send_message(message.chat.id,
+        'Неверный формат команды. Используйте: /add имя задачи')
+        return
+    task_name = parts[1].strip()
+    
+    task =  Task(task_name)
+    tasks.append(task)
+    bot.send_message(message.chat.id,
+    f'Добавлено: \n{task}')
+
+@bot.message_handler(commands=['list'])
+def handle_list(message):
+    if not tasks:
+        bot.send_message(message.chat.id,
+        "Список задач пуст")
+        return
+    task_list = "\n".join(str(task) for task in tasks)
+    bot.send_message(message.chat.id,
+    f"Список задач:\n{task_list}")
+
+
+
 print("Бот запущен")
 bot.polling(none_stop=True)
