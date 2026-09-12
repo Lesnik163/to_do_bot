@@ -4,8 +4,8 @@ import telebot
 from dotenv import load_dotenv
 
 from models.task import Task
+from services.tasks import find_task, find_task_by_name, parsed_task_id, tasks
 
-tasks = []
 load_dotenv()
 
 token = os.getenv("BOT_TOKEN")
@@ -26,9 +26,9 @@ def handle_help(message):
     '\n'.join([
         "Список команд:",
         "/start — начать работу с ботом",
-        "/add <задача> — добавить задачу",
-        "/delete <номер> — удалить задачу",
-        "/complete <номер> — отметить задачу как выполненную",
+        "/add купить хлеб — добавить задачу",
+        "/delete 1 — удалить задачу",
+        "/complete 1 — отметить задачу как выполненную",
         "/list — показать список задач",
         "/help — показать список команд",
     ]),
@@ -42,8 +42,12 @@ def handle_add(message):
         'Неверный формат команды. Используйте: /add имя задачи')
         return
     task_name = parts[1].strip()
-    
-    task =  Task(task_name)
+
+    if find_task_by_name(task_name):
+        bot.send_message(message.chat.id, "Такая задача уже есть")
+        return
+
+    task = Task(task_name)
     tasks.append(task)
     bot.send_message(message.chat.id,
     f'Добавлено: \n{task}')
@@ -58,6 +62,37 @@ def handle_list(message):
     bot.send_message(message.chat.id,
     f"Список задач:\n{task_list}")
 
+@bot.message_handler(commands=['delete'])
+def handle_delete(message):
+    task_id = parsed_task_id(message.text)
+    if task_id is None:
+        bot.send_message(message.chat.id,
+        "Неверный формат команды. Используйте: /delete номер задачи")
+        return
+    task = find_task(task_id)
+    if task is None:
+        bot.send_message(message.chat.id,
+        "Такой задачи не существует")
+        return
+    tasks.remove(task)
+    bot.send_message(message.chat.id,
+    f'Удалено: \n{task}')
+
+@bot.message_handler(commands=['complete'])
+def handle_complete(message):
+    task_id = parsed_task_id(message.text)
+    if task_id is None:
+        bot.send_message(message.chat.id,
+        "Неверный формат команды. Используйте: /complete номер задачи")
+        return
+    task = find_task(task_id)
+    if task is None:
+        bot.send_message(message.chat.id,
+        "Такой задачи не существует")
+        return
+    task.complete()
+    bot.send_message(message.chat.id,
+    f'Задача выполнена: \n{task}')
 
 
 print("Бот запущен")
