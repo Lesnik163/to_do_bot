@@ -26,9 +26,9 @@ def handle_help(message):
     '\n'.join([
         "Список команд:",
         "/start — начать работу с ботом",
-        "/add купить хлеб — добавить задачу",
-        "/delete 1 — удалить задачу",
-        "/complete 1 — отметить задачу как выполненную",
+        "/add — добавить задачу",
+        "/delete  — удалить задачу",
+        "/complete  — отметить задачу как выполненную",
         "/list — показать список задач",
         "/help — показать список команд",
     ]),
@@ -94,6 +94,10 @@ def handle_complete(message):
     bot.send_message(message.chat.id,
     f'Задача выполнена: \n{task}')
 
+@bot.message_handler(func=lambda message: True)
+def handle_unknown(message):
+    bot.send_message(message.chat.id,
+    "Я не понимаю эту команду. Используйте /help для получения списка команд.")
 
 print("Бот запущен")
 bot.polling(none_stop=True)
