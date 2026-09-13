@@ -3,8 +3,14 @@ import os
 import telebot
 from dotenv import load_dotenv
 
-from models.task import Task
-from services.tasks import find_task, find_task_by_name, parsed_task_id, tasks
+from services.tasks import (
+    add_task,
+    complete_task,
+    delete_task,
+    find_task_by_name,
+    get_tasks,
+    parsed_task_id,
+)
 
 load_dotenv()
 
@@ -26,9 +32,9 @@ def handle_help(message):
     '\n'.join([
         "Список команд:",
         "/start — начать работу с ботом",
-        "/add — добавить задачу",
-        "/delete  — удалить задачу",
-        "/complete  — отметить задачу как выполненную",
+        "/add купить хлеб — добавить задачу",
+        "/delete 1 — удалить задачу",
+        "/complete 1 — отметить задачу как выполненную",
         "/list — показать список задач",
         "/help — показать список команд",
     ]),
@@ -42,23 +48,24 @@ def handle_add(message):
         'Неверный формат команды. Используйте: /add имя задачи')
         return
     task_name = parts[1].strip()
+    user_id = message.from_user.id
 
-    if find_task_by_name(task_name):
+    if find_task_by_name(task_name, user_id):
         bot.send_message(message.chat.id, "Такая задача уже есть")
         return
 
-    task = Task(task_name)
-    tasks.append(task)
+    task = add_task(task_name, user_id)
     bot.send_message(message.chat.id,
     f'Добавлено: \n{task}')
 
 @bot.message_handler(commands=['list'])
 def handle_list(message):
-    if not tasks:
+    user_tasks = get_tasks(message.from_user.id)
+    if not user_tasks:
         bot.send_message(message.chat.id,
         "Список задач пуст")
         return
-    task_list = "\n".join(str(task) for task in tasks)
+    task_list = "\n".join(str(task) for task in user_tasks)
     bot.send_message(message.chat.id,
     f"Список задач:\n{task_list}")
 
@@ -69,12 +76,11 @@ def handle_delete(message):
         bot.send_message(message.chat.id,
         "Неверный формат команды. Используйте: /delete номер задачи")
         return
-    task = find_task(task_id)
+    task = delete_task(task_id, message.from_user.id)
     if task is None:
         bot.send_message(message.chat.id,
         "Такой задачи не существует")
         return
-    tasks.remove(task)
     bot.send_message(message.chat.id,
     f'Удалено: \n{task}')
 
@@ -85,12 +91,11 @@ def handle_complete(message):
         bot.send_message(message.chat.id,
         "Неверный формат команды. Используйте: /complete номер задачи")
         return
-    task = find_task(task_id)
+    task = complete_task(task_id, message.from_user.id)
     if task is None:
         bot.send_message(message.chat.id,
         "Такой задачи не существует")
         return
-    task.complete()
     bot.send_message(message.chat.id,
     f'Задача выполнена: \n{task}')
 

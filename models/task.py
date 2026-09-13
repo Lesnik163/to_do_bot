@@ -1,15 +1,10 @@
 class Task:
-	next_id = 1
-
-	def __init__(self, name):
+	def __init__(self, id, name, is_completed=False):
 		if name.strip() == "":
 			raise ValueError("Название задачи не может быть пустым")
+		self.id = id
 		self.name = name
-
-		self.id = Task.next_id
-		Task.next_id += 1
-
-		self.is_completed = False
+		self.is_completed = is_completed
 
 	def __str__(self):
 		status = "✅" if self.is_completed else "❌"
